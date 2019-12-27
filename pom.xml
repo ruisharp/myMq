@@ -10,9 +10,9 @@
     <relativePath/> <!-- lookup parent from repository -->
   </parent>
   <groupId>com.my.mq.commom</groupId>
-  <artifactId>demo</artifactId>
+  <artifactId>MyMq</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>demo</name>
+  <name>MyMq</name>
   <description>Demo project for Spring Boot</description>
 
   <properties>
