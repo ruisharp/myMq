@@ -1,0 +1,159 @@
+spring:
+  application:
+    name: common-service
+  profiles:
+    active: dev
+
+  # 缓存设置
+  cache:
+    redis:
+      time-to-live: 1d
+  redis:
+    port: 6379
+    host: 192.168.0.206
+    password: Password1
+    database: 0
+    timeout: 1s
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+        max-wait: -1ms
+
+  rabbitmq:
+    host: 192.168.0.204
+    username: dev
+    password: dev
+    virtual-host: /dev
+
+  zipkin:
+    sender:
+      type: kafka
+  sleuth:
+    sampler:
+      probability: 1.0
+    enabled: true
+
+  kafka:
+    bootstrap-servers: 192.168.0.204:9092
+
+server:
+  port: 11244
+  undertow:
+    max-http-post-size: 0
+    # 设置IO线程数, 它主要执行非阻塞的任务,它们会负责多个连接, 默认设置每个CPU核心一个线程,数量和CPU 内核数目一样即可
+    io-threads: 4
+    # 阻塞任务线程池, 当执行类似servlet请求阻塞操作, undertow会从这个线程池中取得线程,它的值设置取决于系统的负载  io-threads*8
+    worker-threads: 32
+    # 以下的配置会影响buffer,这些buffer会用于服务器连接的IO操作,有点类似netty的池化内存管理
+    # 每块buffer的空间大小,越小的空间被利用越充分
+    buffer-size: 1024
+    # 每个区分配的buffer数量 , 所以pool的大小是buffer-size * buffers-per-region
+    # buffers-per-region: 1024 # 这个参数不需要写了
+    # 是否分配的直接内存
+    direct-buffers: true
+
+# feign配置
+feign:
+  hystrix:
+    # 在feign中开启hystrix功能，默认情况下feign不开启hystrix功能
+    enabled: true
+  httpclient:
+    # 配置httpclient线程池
+    enable: true
+  #请求和响应GZIP压缩支持
+  compression:
+    request:
+      enable: true
+      mime-types: text/xml,annotation/xml,annotation/json
+      min-request-size: 2048
+
+# hystrix的超时时间要大于 (1 + MaxAutoRetries + MaxAutoRetriesNextServer) * ReadTimeout 比较好
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 30000
+  threadpool:
+    default:
+      coreSize: 10
+      maximumSize: 200
+      allowMaximumSizeToDivergeFromCoreSize: true
+
+ribbon:
+  ReadTimeout: 10000
+  ConnectTimeout: 5000
+  MaxAutoRetries: 0
+  MaxAutoRetriesNextServer: 1
+
+
+eureka:
+  client:
+    registry-fetch-interval-seconds: 10
+    healthcheck:
+      enabled: true
+    serviceUrl:
+      defaultZone: http://192.168.0.204:8761/eureka
+  instance:
+    lease-renewal-interval-in-seconds: 5
+    lease-expiration-duration-in-seconds: 15
+    prefer-ip-address: true
+    metadata-map:
+      version: 2.1.0
+      zone: delicloud
+
+#  redis:
+#    host: logstash.redis
+#    port: 6480
+#    password: Password1
+
+logging:
+  config: classpath:mylogback.xml
+  level:
+    root: INFO
+    com.delicloud: DEBUG
+
+delicloud:
+  service:
+    # 线程池配置
+    async-pool:
+      corePoolSize: 3
+      maxPoolSize: 5
+      queueCapacity: 100
+      keepAlive: 60
+  # MQ自定义实现配置
+  mq:
+    enable: true
+    event_groups:
+      # 监听自己服务的事件
+      - prefetch: 1 #一次读取的消息数
+        min_concurrency: 1 #默认最小启动的消费者数量
+        max_concurrency: 5 #最大启动的消费者数量
+        auto_ack: true # 是否自动ack
+        durable: true # 是否支持持久化
+        requeue: false # 是否异常消息重入队列
+        dynamic: false # 是否动态管理。如果true，则框架默认不会进行配置加载
+        #service: ${spring.application.name} # 事件产生的服务名称，如果是自己，可以不设置
+        events: # 监听的事件列表
+          - evt1
+          - evt2
+      # 监听别的服务抛出的事件
+      #- service: test
+      #  events: evt.* # 通配符匹配，evt.1,evt.2...都会监听
+
+  # kafka配置
+  kafka:
+    producer:
+      enable: true
+      servers: 192.168.0.204:9092
+      topicPartitions: 2
+
+  # 基于kafka的日志采集
+  logging:
+    type: platform
+    kafka:
+      topic: logstash
+      server: 192.168.0.204:9092
