@@ -1,10 +1,10 @@
-spring:
-  application.name: common-service
-  profiles:
-    active: dev
-    include: dev
-  cloud:
-    config:
-      label: master
-      profile: ${spring.profiles.active}
-      uri: http://user:no1rX72DO0ATi5NTcUhun80NXzcSghWQ@config.delicloud.com/platform-v2
+#spring:
+#  application.name: common-service
+#  profiles:
+#    active: dev
+#    include: dev
+#  cloud:
+#    config:
+#      label: master
+#      profile: ${spring.profiles.active}
+#      uri: http://user:no1rX72DO0ATi5NTcUhun80NXzcSghWQ@config.delicloud.com/platform-v2
